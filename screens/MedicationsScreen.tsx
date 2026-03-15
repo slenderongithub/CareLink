@@ -31,16 +31,17 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: FONTS.bold,
     fontSize: 32,
+    marginTop: SPACING.xl,
   },
   subtitle: {
     fontFamily: FONTS.regular,
-    fontSize: 15,
+    fontSize: 17,
     marginTop: 8,
-    lineHeight: 22,
+    lineHeight: 27,
     marginBottom: SPACING.xl,
     maxWidth: 320,
   },
   stack: {
-    gap: SPACING.md,
+    gap: 18,
   },
 });

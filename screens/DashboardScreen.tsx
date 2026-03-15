@@ -50,10 +50,17 @@ export function DashboardScreen() {
           <Text style={[styles.greeting, { color: colors.textPrimary }]}>Good Evening</Text>
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>CareLink keeps everyone aligned around today’s care.</Text>
         </View>
-        <TouchableOpacity style={[styles.modeToggle, { backgroundColor: colors.card }, shadows.card]} onPress={toggleMode} activeOpacity={0.85}>
+        <TouchableOpacity
+          style={[styles.modeToggle, { backgroundColor: colors.card }, shadows.card]}
+          onPress={toggleMode}
+          activeOpacity={0.85}
+          accessibilityRole="button"
+          accessibilityLabel="Toggle theme"
+          accessibilityHint="Switches between light mode and dark mode"
+        >
           <MaterialCommunityIcons
             name={mode === 'dark' ? 'weather-sunny' : 'weather-night'}
-            size={20}
+            size={28}
             color={colors.primary}
           />
         </TouchableOpacity>
@@ -61,18 +68,34 @@ export function DashboardScreen() {
 
       <StatusCard />
 
-      <Animated.View style={[styles.alertCard, pulseStyle, { backgroundColor: colors.alertSurface }, shadows.card]}>
+      <Animated.View
+        style={[
+          styles.alertCard,
+          pulseStyle,
+          {
+            backgroundColor: colors.alertSurface,
+            borderColor: colors.dangerButton,
+          },
+          shadows.card,
+        ]}
+        accessibilityRole="summary"
+        accessibilityLabel="Emergency readiness. Fall detection alert is active. Family notifications are enabled."
+      >
         <View style={styles.alertHeader}>
-          <View>
+          <View style={styles.alertTextWrap}>
             <Text style={[styles.alertEyebrow, { color: colors.accent }]}>Emergency readiness</Text>
             <Text style={[styles.alertTitle, { color: colors.textPrimary }]}>Fall detection alert is active</Text>
           </View>
-          <MaterialCommunityIcons name="shield-alert-outline" size={24} color={colors.accent} />
+          <View style={[styles.alertIconWrap, { backgroundColor: `${colors.accent}18` }]}>
+            <MaterialCommunityIcons name="shield-alert-outline" size={22} color={colors.accent} />
+          </View>
         </View>
         <Text style={[styles.alertText, { color: colors.textSecondary }]}>Family notifications are enabled for urgent health events.</Text>
       </Animated.View>
 
-      <CareScoreIndicator score={careScore} />
+      <View style={styles.cardGap}>
+        <CareScoreIndicator score={careScore} />
+      </View>
 
       <SectionHeader title="Today's medications" detail={`${medications.filter((m) => m.status === 'taken').length}/${medications.length} completed`} />
       <View style={styles.sectionStack}>
@@ -109,13 +132,27 @@ export function DashboardScreen() {
       </View>
 
       <View style={styles.quickActionsRow}>
-        <TouchableOpacity style={[styles.quickActionButton, { backgroundColor: colors.card }, shadows.card]} onPress={logVoiceUpdate} activeOpacity={0.85}>
+        <TouchableOpacity
+          style={[styles.quickActionButton, { backgroundColor: colors.card }, shadows.card]}
+          onPress={logVoiceUpdate}
+          activeOpacity={0.85}
+          accessibilityRole="button"
+          accessibilityLabel="Add voice log"
+          accessibilityHint="Records a voice update in the family activity feed"
+        >
           <MaterialCommunityIcons name="microphone-outline" size={20} color={colors.textPrimary} />
           <Text style={[styles.quickActionText, { color: colors.textPrimary }]}>Voice log</Text>
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={[styles.fab, { backgroundColor: colors.primary }, shadows.card]} onPress={logCheckIn} activeOpacity={0.9}>
+      <TouchableOpacity
+        style={[styles.fab, { backgroundColor: colors.primary }, shadows.card]}
+        onPress={logCheckIn}
+        activeOpacity={0.9}
+        accessibilityRole="button"
+        accessibilityLabel="Quick check-in"
+        accessibilityHint="Adds a check-in event to the family activity feed"
+      >
         <MaterialCommunityIcons name="plus" size={26} color={colors.white} />
       </TouchableOpacity>
     </ScreenContainer>
@@ -138,6 +175,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+    marginTop: SPACING.xl,
   },
   greeting: {
     fontFamily: FONTS.bold,
@@ -145,15 +183,15 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontFamily: FONTS.regular,
-    fontSize: 15,
+    fontSize: 16,
     marginTop: 8,
     marginBottom: SPACING.lg,
-    lineHeight: 22,
+    lineHeight: 26,
     maxWidth: 300,
   },
   modeToggle: {
-    width: 44,
-    height: 44,
+    width: 56,
+    height: 56,
     borderRadius: RADIUS.full,
     alignItems: 'center',
     justifyContent: 'center',
@@ -161,7 +199,9 @@ const styles = StyleSheet.create({
   },
   alertCard: {
     borderRadius: RADIUS.lg,
-    padding: SPACING.lg,
+    borderWidth: 2,
+    paddingHorizontal: 24,
+    paddingVertical: 32,
     marginTop: SPACING.lg,
   },
   alertHeader: {
@@ -170,42 +210,62 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: SPACING.md,
   },
+  alertTextWrap: {
+    flex: 1,
+    paddingRight: 8,
+  },
+  alertIconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: RADIUS.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 2,
+  },
   alertEyebrow: {
     fontFamily: FONTS.medium,
-    fontSize: 12,
+    fontSize: 13,
+    lineHeight: 18,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
     marginBottom: 4,
   },
   alertTitle: {
     fontFamily: FONTS.bold,
-    fontSize: 18,
+    fontSize: 22,
   },
   alertText: {
     fontFamily: FONTS.regular,
-    fontSize: 13,
+    fontSize: 20,
     marginTop: SPACING.sm,
-    lineHeight: 20,
+    lineHeight: 30,
+  },
+  cardGap: {
+    marginTop: SPACING.md,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'baseline',
-    marginTop: SPACING.xl,
+    marginTop: 32,
     marginBottom: SPACING.md,
   },
   sectionTitle: {
     fontFamily: FONTS.bold,
-    fontSize: 20,
+    fontSize: 22,
   },
   sectionDetail: {
     fontFamily: FONTS.medium,
-    fontSize: 12,
+    fontSize: 17,
+    lineHeight: 27,
   },
   sectionStack: {
-    gap: SPACING.md,
+    gap: 16,
   },
   appointmentCard: {
     borderRadius: RADIUS.lg,
-    padding: SPACING.md,
+    paddingHorizontal: 22,
+    paddingVertical: 30,
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.md,
@@ -218,18 +278,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   appointmentTitle: {
-    fontFamily: FONTS.semiBold,
-    fontSize: 16,
+    fontFamily: FONTS.bold,
+    fontSize: 20,
   },
   appointmentTime: {
     fontFamily: FONTS.regular,
-    fontSize: 13,
+    fontSize: 17,
+    lineHeight: 27,
     marginTop: 4,
   },
   activityWrap: {
     borderRadius: RADIUS.lg,
     paddingHorizontal: SPACING.md,
-    paddingTop: SPACING.md,
+    paddingTop: SPACING.md + 8,
+    paddingBottom: SPACING.md + 8,
   },
   quickActionsRow: {
     marginTop: SPACING.lg,
@@ -238,15 +300,16 @@ const styles = StyleSheet.create({
   },
   quickActionButton: {
     borderRadius: RADIUS.full,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 20,
+    minHeight: 56,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
   quickActionText: {
-    fontFamily: FONTS.semiBold,
-    fontSize: 14,
+    fontFamily: FONTS.bold,
+    fontSize: 17,
+    lineHeight: 27,
   },
   fab: {
     position: 'absolute',

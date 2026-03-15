@@ -85,15 +85,16 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontFamily: FONTS.regular,
-    fontSize: 16,
-    lineHeight: 22,
+    fontSize: 17,
+    lineHeight: 27,
   },
   userText: {
     fontFamily: FONTS.semiBold,
   },
   timeText: {
     fontFamily: FONTS.medium,
-    fontSize: 12,
+    fontSize: 17,
+    lineHeight: 27,
     marginTop: 6,
   },
 });

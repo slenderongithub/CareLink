@@ -1,257 +1,218 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
-  Easing,
-  interpolate,
-  useAnimatedStyle,
-  useSharedValue,
-  withSequence,
-  withSpring,
-  withTiming,
+	Easing,
+	interpolate,
+	useAnimatedStyle,
+	useSharedValue,
+	withSequence,
+	withSpring,
+	withTiming,
 } from 'react-native-reanimated';
 
 import { Medication } from '../constants/mockData';
-import { AppColorPalette, FONTS, RADIUS, SHADOW, SPACING } from '../constants/theme';
+import { FONTS, RADIUS, SPACING } from '../constants/theme';
 import { useAppTheme } from '../hooks/useAppTheme';
 
 type MedicationCardProps = {
-  medication: Medication;
-  onTakeNow: (id: string) => void;
-  mode?: 'dashboard' | 'list';
+	medication: Medication;
+	onTakeNow: (id: string) => void;
+	mode?: 'dashboard' | 'list';
 };
 
+const SPRING_CONFIG = { damping: 18, stiffness: 120 };
+
 export function MedicationCard({ medication, onTakeNow, mode = 'list' }: MedicationCardProps) {
-  const { colors, shadows } = useAppTheme();
-  const styles = useMemo(() => createStyles(colors, shadows), [colors, shadows]);
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const confirmationTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isTaken = medication.status === 'taken';
-  const pressScale = useSharedValue(1);
-  const ripple = useSharedValue(0);
-  const completion = useSharedValue(isTaken ? 1 : 0);
-  const cardEntry = useSharedValue(0);
+	const { colors, shadows } = useAppTheme();
+	const [localStatus, setLocalStatus] = useState<'pending' | 'taken' | 'skipped'>(
+		medication.status === 'taken' ? 'taken' : 'pending'
+	);
 
-  useEffect(() => {
-    cardEntry.value = withTiming(1, { duration: 360, easing: Easing.out(Easing.cubic) });
-  }, [cardEntry]);
+	const cardScale = useSharedValue(0.92);
+	const cardOpacity = useSharedValue(0);
+	const burst = useSharedValue(0);
 
-  useEffect(() => {
-    completion.value = withTiming(isTaken ? 1 : 0, { duration: 380, easing: Easing.out(Easing.cubic) });
-  }, [completion, isTaken]);
+	useEffect(() => {
+		cardScale.value = withSpring(1, SPRING_CONFIG);
+		cardOpacity.value = withTiming(1, { duration: 280, easing: Easing.out(Easing.cubic) });
+	}, [cardOpacity, cardScale]);
 
-  useEffect(() => {
-    return () => {
-      if (confirmationTimeout.current) {
-        clearTimeout(confirmationTimeout.current);
-      }
-    };
-  }, []);
+	useEffect(() => {
+		if (medication.status === 'taken') {
+			setLocalStatus('taken');
+		}
+	}, [medication.status]);
 
-  const handlePress = () => {
-    if (isTaken) {
-      return;
-    }
+	const isTaken = localStatus === 'taken';
+	const isSkipped = localStatus === 'skipped';
 
-    pressScale.value = withSequence(withSpring(0.96), withSpring(1));
-    ripple.value = 0;
-    ripple.value = withTiming(1, { duration: 500, easing: Easing.out(Easing.quad) });
-    setShowConfirmation(true);
-    onTakeNow(medication.id);
-    if (confirmationTimeout.current) {
-      clearTimeout(confirmationTimeout.current);
-    }
-    confirmationTimeout.current = setTimeout(() => setShowConfirmation(false), 1800);
-  };
+	const containerStyle = useAnimatedStyle(() => ({
+		opacity: cardOpacity.value,
+		transform: [{ scale: cardScale.value }],
+	}));
 
-  const cardStyle = useAnimatedStyle(() => ({
-    opacity: cardEntry.value,
-    transform: [{ translateY: interpolate(cardEntry.value, [0, 1], [12, 0]) }],
-    backgroundColor: completion.value > 0.5 ? colors.pendingSurface : colors.card,
-    borderColor: completion.value > 0.5 ? colors.pendingBorder : 'transparent',
-  }));
+	const burstStyle = useAnimatedStyle(() => ({
+		opacity: interpolate(burst.value, [0, 1], [0, 1]),
+		transform: [{ scale: interpolate(burst.value, [0, 1], [0.6, 1.35]) }],
+	}));
 
-  const actionScaleStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: pressScale.value }],
-  }));
+	const onTakePress = () => {
+		if (isTaken) {
+			return;
+		}
 
-  const pillIconStyle = useAnimatedStyle(() => ({
-    opacity: 1 - completion.value,
-    transform: [{ scale: interpolate(completion.value, [0, 1], [1, 0.75]) }],
-  }));
+		setLocalStatus('taken');
+		onTakeNow(medication.id);
+		burst.value = 0;
+		burst.value = withSequence(withTiming(1, { duration: 240 }), withTiming(0, { duration: 240 }));
+	};
 
-  const checkIconStyle = useAnimatedStyle(() => ({
-    opacity: completion.value,
-    transform: [{ scale: interpolate(completion.value, [0, 1], [0.7, 1]) }],
-  }));
+	const onSkipPress = () => {
+		if (isTaken) {
+			return;
+		}
+		setLocalStatus('skipped');
+	};
 
-  const rippleStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(ripple.value, [0, 1], [0.24, 0]),
-    transform: [{ scale: interpolate(ripple.value, [0, 1], [0.1, 3.2]) }],
-  }));
+	const statusLabel = isTaken ? 'Taken' : isSkipped ? 'Skipped' : 'Pending';
+	const statusIcon = isTaken ? 'check-circle' : isSkipped ? 'close-circle' : 'clock-alert-outline';
+	const statusBg = isTaken ? colors.doneBadge : isSkipped ? colors.pendingBadge : colors.mutedSurface;
+	const statusTextColor = isTaken ? colors.doneBadgeText : isSkipped ? colors.accent : colors.textSecondary;
 
-  return (
-    <Animated.View style={[styles.card, cardStyle]}>
-      <View style={styles.topRow}>
-        <View style={styles.iconSlot}>
-          <Animated.View style={[styles.iconLayer, pillIconStyle]}>
-            <MaterialCommunityIcons name="pill" size={20} color={colors.primary} />
-          </Animated.View>
-          <Animated.View style={[styles.iconLayer, styles.iconOverlay, checkIconStyle]}>
-            <MaterialCommunityIcons name="check" size={20} color={colors.success} />
-          </Animated.View>
-        </View>
+	return (
+		<Animated.View
+			style={[
+				styles.card,
+				containerStyle,
+				{ backgroundColor: colors.card, borderColor: colors.border },
+				shadows.card,
+			]}
+		>
+			<View style={styles.rowTop}>
+				<View style={[styles.leadingIcon, { backgroundColor: colors.mutedSurface }]}>
+					<MaterialCommunityIcons name="pill" size={28} color={colors.primary} />
+				</View>
 
-        <View style={styles.infoWrap}>
-          <Text style={styles.name}>{medication.name}</Text>
-          <Text style={styles.meta}>{medication.dosage} • {medication.time}</Text>
-        </View>
+				<View style={styles.infoWrap}>
+					<Text style={[styles.medName, { color: colors.textPrimary }]}>{medication.name}</Text>
+					<Text style={[styles.medMeta, { color: colors.textSecondary }]}>{medication.dosage} at {medication.time}</Text>
+				</View>
 
-        <View style={[styles.statusBadge, isTaken ? styles.badgeDone : styles.badgePending]}>
-          <Text style={[styles.statusText, isTaken ? styles.badgeDoneText : styles.badgePendingText]}>
-            {isTaken ? 'Taken' : 'Pending'}
-          </Text>
-        </View>
-      </View>
+				<View style={[styles.statusChip, { backgroundColor: statusBg }]}> 
+					<MaterialCommunityIcons name={statusIcon} size={16} color={statusTextColor} />
+					<Text style={[styles.statusText, { color: statusTextColor }]}>{statusLabel}</Text>
+				</View>
+			</View>
 
-      {mode === 'dashboard' ? null : <Text style={styles.listTime}>Scheduled for {medication.time}</Text>}
+			{mode === 'dashboard' ? null : (
+				<Text style={[styles.supportingText, { color: colors.textSecondary }]}>Tap one of the actions below to update this medicine in the family feed.</Text>
+			)}
 
-      <View style={styles.footerRow}>
-        <Animated.View style={[styles.buttonShell, actionScaleStyle]}>
-          <Pressable onPress={handlePress} style={[styles.button, isTaken ? styles.buttonDone : styles.buttonPending]}>
-            {!isTaken && <Animated.View pointerEvents="none" style={[styles.ripple, rippleStyle]} />}
-            <Text style={[styles.buttonText, isTaken ? styles.buttonTextDone : styles.buttonTextPending]}>
-              {isTaken ? 'Completed' : 'Take Now'}
-            </Text>
-          </Pressable>
-        </Animated.View>
+			<View style={styles.actionsRow}>
+				<Pressable
+					onPress={onTakePress}
+					style={[styles.actionButton, { backgroundColor: colors.successButton }]}
+					accessibilityRole="button"
+					accessibilityLabel={`Mark ${medication.name} as taken`}
+					accessibilityHint="Updates medication status and notifies the family feed"
+				>
+					<MaterialCommunityIcons name="check-bold" size={28} color={colors.white} />
+					<Text style={[styles.actionText, { color: colors.white }]}>Taken</Text>
+				</Pressable>
 
-        {showConfirmation || isTaken ? <Text style={styles.confirmationText}>Updated for family</Text> : <View />}
-      </View>
-    </Animated.View>
-  );
+				<Pressable
+					onPress={onSkipPress}
+					style={[styles.actionButton, { backgroundColor: colors.dangerButton }]}
+					accessibilityRole="button"
+					accessibilityLabel={`Skip ${medication.name}`}
+					accessibilityHint="Marks this medicine as skipped without completing it"
+				>
+					<MaterialCommunityIcons name="close-thick" size={28} color={colors.white} />
+					<Text style={[styles.actionText, { color: colors.white }]}>Skip</Text>
+				</Pressable>
+			</View>
+
+			<Animated.View style={[styles.burstWrap, burstStyle]} pointerEvents="none">
+				<MaterialCommunityIcons name="check-decagram" size={40} color={colors.successButton} />
+			</Animated.View>
+		</Animated.View>
+	);
 }
 
-function createStyles(colors: AppColorPalette, shadows: typeof SHADOW) {
-  return StyleSheet.create({
-    card: {
-      borderRadius: RADIUS.lg,
-      padding: SPACING.md,
-      borderWidth: 1,
-      ...shadows.card,
-    },
-    topRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    iconSlot: {
-      width: 46,
-      height: 46,
-      borderRadius: RADIUS.md,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: colors.mutedSurface,
-      position: 'relative',
-      overflow: 'hidden',
-    },
-    iconLayer: {
-      position: 'absolute',
-    },
-    iconOverlay: {
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    infoWrap: {
-      flex: 1,
-      marginLeft: SPACING.md,
-    },
-    name: {
-      fontFamily: FONTS.semiBold,
-      fontSize: 17,
-      color: colors.textPrimary,
-    },
-    meta: {
-      fontFamily: FONTS.regular,
-      fontSize: 13,
-      marginTop: 4,
-      color: colors.textSecondary,
-    },
-    statusBadge: {
-      borderRadius: RADIUS.full,
-      paddingHorizontal: 10,
-      paddingVertical: 6,
-    },
-    badgePending: {
-      backgroundColor: colors.pendingBadge,
-    },
-    badgeDone: {
-      backgroundColor: colors.doneBadge,
-    },
-    statusText: {
-      fontFamily: FONTS.medium,
-      fontSize: 12,
-    },
-    badgePendingText: {
-      color: colors.accent,
-    },
-    badgeDoneText: {
-      color: colors.doneBadgeText,
-    },
-    listTime: {
-      fontFamily: FONTS.regular,
-      fontSize: 13,
-      color: colors.textSecondary,
-      marginTop: SPACING.sm,
-    },
-    footerRow: {
-      marginTop: SPACING.md,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      gap: SPACING.sm,
-    },
-    buttonShell: {
-      borderRadius: RADIUS.full,
-      overflow: 'hidden',
-    },
-    button: {
-      borderRadius: RADIUS.full,
-      paddingHorizontal: 18,
-      paddingVertical: 11,
-      overflow: 'hidden',
-      position: 'relative',
-    },
-    buttonPending: {
-      backgroundColor: colors.primary,
-    },
-    buttonDone: {
-      backgroundColor: colors.doneBadge,
-    },
-    buttonText: {
-      fontFamily: FONTS.semiBold,
-      fontSize: 14,
-    },
-    buttonTextPending: {
-      color: colors.white,
-    },
-    buttonTextDone: {
-      color: colors.doneBadgeText,
-    },
-    ripple: {
-      position: 'absolute',
-      width: 110,
-      height: 110,
-      borderRadius: RADIUS.full,
-      backgroundColor: '#A9ECE7',
-      top: -38,
-      left: -18,
-    },
-    confirmationText: {
-      fontFamily: FONTS.medium,
-      fontSize: 12,
-      color: colors.primary,
-      flexShrink: 1,
-      textAlign: 'right',
-    },
-  });
-}
+const styles = StyleSheet.create({
+	card: {
+		borderRadius: RADIUS.lg,
+		borderWidth: 1,
+		padding: 22,
+		gap: 18,
+		position: 'relative',
+	},
+	rowTop: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: 14,
+	},
+	leadingIcon: {
+		width: 56,
+		height: 56,
+		borderRadius: RADIUS.md,
+		alignItems: 'center',
+		justifyContent: 'center',
+	},
+	infoWrap: {
+		flex: 1,
+	},
+	medName: {
+		fontFamily: FONTS.bold,
+		fontSize: 20,
+		lineHeight: 28,
+	},
+	medMeta: {
+		marginTop: 6,
+		fontFamily: FONTS.regular,
+		fontSize: 17,
+		lineHeight: 27,
+	},
+	statusChip: {
+		borderRadius: RADIUS.full,
+		minHeight: 40,
+		paddingHorizontal: 12,
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: 6,
+	},
+	statusText: {
+		fontFamily: FONTS.bold,
+		fontSize: 14,
+	},
+	supportingText: {
+		fontFamily: FONTS.regular,
+		fontSize: 17,
+		lineHeight: 27,
+	},
+	actionsRow: {
+		flexDirection: 'row',
+		gap: SPACING.sm,
+	},
+	actionButton: {
+		flex: 1,
+		minHeight: 68,
+		borderRadius: RADIUS.full,
+		alignItems: 'center',
+		justifyContent: 'center',
+		flexDirection: 'row',
+		gap: 10,
+		paddingHorizontal: 14,
+	},
+	actionText: {
+		fontFamily: FONTS.bold,
+		fontSize: 20,
+		lineHeight: 26,
+	},
+	burstWrap: {
+		position: 'absolute',
+		right: 16,
+		top: 16,
+	},
+});

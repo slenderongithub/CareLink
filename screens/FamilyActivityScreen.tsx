@@ -2,6 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { ActivityItem } from '../components/ActivityItem';
+import { HealthGraphs } from '../components/HealthGraphs';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { FONTS, RADIUS, SPACING } from '../constants/theme';
 import { useAppTheme } from '../hooks/useAppTheme';
@@ -9,7 +10,7 @@ import { useCareData } from '../hooks/useCareData';
 
 export function FamilyActivityScreen() {
   const { colors, shadows } = useAppTheme();
-  const { activities, logCheckIn, logVoiceUpdate } = useCareData();
+  const { activities, healthData, logCheckIn, logVoiceUpdate } = useCareData();
 
   return (
     <ScreenContainer>
@@ -17,11 +18,25 @@ export function FamilyActivityScreen() {
       <Text style={[styles.subtitle, { color: colors.textSecondary }]}>A shared timeline of check-ins, medication logs, and appointments.</Text>
 
       <View style={styles.actionsRow}>
-        <TouchableOpacity style={[styles.actionChip, { backgroundColor: colors.card }, shadows.card]} onPress={logCheckIn} activeOpacity={0.85}>
+        <TouchableOpacity
+          style={[styles.actionChip, { backgroundColor: colors.card }, shadows.card]}
+          onPress={logCheckIn}
+          activeOpacity={0.85}
+          accessibilityRole="button"
+          accessibilityLabel="Log family check-in"
+          accessibilityHint="Adds a check-in event to the family timeline"
+        >
           <MaterialCommunityIcons name="heart-outline" size={18} color={colors.primary} />
           <Text style={[styles.actionText, { color: colors.textPrimary }]}>Log check-in</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionChip, { backgroundColor: colors.card }, shadows.card]} onPress={logVoiceUpdate} activeOpacity={0.85}>
+        <TouchableOpacity
+          style={[styles.actionChip, { backgroundColor: colors.card }, shadows.card]}
+          onPress={logVoiceUpdate}
+          activeOpacity={0.85}
+          accessibilityRole="button"
+          accessibilityLabel="Add voice update"
+          accessibilityHint="Adds a voice update event to the family timeline"
+        >
           <MaterialCommunityIcons name="microphone-outline" size={18} color={colors.textPrimary} />
           <Text style={[styles.actionText, { color: colors.textPrimary }]}>Voice update</Text>
         </TouchableOpacity>
@@ -32,6 +47,11 @@ export function FamilyActivityScreen() {
           <ActivityItem key={item.id} item={item} index={index} />
         ))}
       </View>
+
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Weekly Trends</Text>
+        <HealthGraphs data={healthData} />
+      </View>
     </ScreenContainer>
   );
 }
@@ -40,13 +60,14 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: FONTS.bold,
     fontSize: 32,
+    marginTop: SPACING.xl,
   },
   subtitle: {
     fontFamily: FONTS.regular,
-    fontSize: 15,
+    fontSize: 17,
     marginTop: 8,
     marginBottom: SPACING.lg,
-    lineHeight: 22,
+    lineHeight: 27,
     maxWidth: 320,
   },
   actionsRow: {
@@ -56,19 +77,27 @@ const styles = StyleSheet.create({
   },
   actionChip: {
     borderRadius: RADIUS.full,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingHorizontal: 20,
+    minHeight: 56,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
   actionText: {
-    fontFamily: FONTS.semiBold,
-    fontSize: 14,
+    fontFamily: FONTS.bold,
+    fontSize: 17,
+    lineHeight: 27,
   },
   timelineCard: {
     borderRadius: RADIUS.lg,
     paddingHorizontal: SPACING.md,
     paddingTop: SPACING.md,
+  },
+  section: {
+    marginTop: SPACING.lg,
+  },
+  sectionTitle: {
+    fontFamily: FONTS.bold,
+    fontSize: 22,
   },
 });

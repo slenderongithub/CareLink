@@ -6,6 +6,8 @@ import {
   initialMedications,
   Medication,
   upcomingAppointments,
+  weeklyHealthData,
+  WeeklyHealthData,
 } from '../constants/mockData';
 
 type ActivityType = 'medication' | 'checkin' | 'voice';
@@ -14,8 +16,10 @@ type CareContextValue = {
   medications: Medication[];
   activities: Activity[];
   appointments: typeof upcomingAppointments;
+  healthData: WeeklyHealthData;
   careScore: number;
   takeMedication: (id: string) => void;
+  addMedication: (input: { name: string; dosage: string; time: string }) => void;
   logCheckIn: () => void;
   logVoiceUpdate: () => void;
 };
@@ -69,6 +73,27 @@ export function CareDataProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const addMedication = ({ name, dosage, time }: { name: string; dosage: string; time: string }) => {
+    const safeName = name.trim();
+    const safeDosage = dosage.trim();
+    const safeTime = time.trim();
+
+    if (!safeName || !safeDosage || !safeTime) {
+      return;
+    }
+
+    const newMedication: Medication = {
+      id: `m-${Date.now()}`,
+      name: safeName,
+      dosage: safeDosage,
+      time: safeTime,
+      status: 'pending',
+    };
+
+    setMedications((prev) => [newMedication, ...prev]);
+    appendActivity('Full Control', `scheduled ${safeName} at ${safeTime}`, 'medication');
+  };
+
   const logCheckIn = () => {
     appendActivity('You', 'completed a family check-in', 'checkin');
   };
@@ -90,8 +115,10 @@ export function CareDataProvider({ children }: { children: ReactNode }) {
       medications,
       activities,
       appointments: upcomingAppointments,
+      healthData: weeklyHealthData,
       careScore,
       takeMedication,
+      addMedication,
       logCheckIn,
       logVoiceUpdate,
     }),

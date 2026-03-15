@@ -22,6 +22,23 @@ export type Appointment = {
   time: string;
 };
 
+export type WeeklyDataPoint = {
+  label: string;
+  value: number;
+};
+
+export type WeeklyHealthData = {
+  steps: WeeklyDataPoint[];
+  heartRate: WeeklyDataPoint[];
+  activityMinutes: WeeklyDataPoint[];
+  medicationAdherence: WeeklyDataPoint[];
+};
+
+export type RouteCoordinate = {
+  latitude: number;
+  longitude: number;
+};
+
 export const patientStatus = {
   name: 'Mom (Anita Verma)',
   heartbeat: '72 bpm',
@@ -64,3 +81,42 @@ export const upcomingAppointments: Appointment[] = [
   { id: 'p1', title: 'Dr. Menon - Cardiology', time: 'Tomorrow, 10:45 AM' },
   { id: 'p2', title: 'Physiotherapy Follow-up', time: 'Tue, 03:30 PM' },
 ];
+
+export const weeklyHealthData: WeeklyHealthData = {
+  steps: [
+    { label: 'Mon', value: 3200 },
+    { label: 'Tue', value: 5100 },
+    { label: 'Wed', value: 4400 },
+    { label: 'Thu', value: 6200 },
+    { label: 'Fri', value: 4820 },
+    { label: 'Sat', value: 3500 },
+    { label: 'Sun', value: 2800 },
+  ],
+  heartRate: [
+    { label: 'Mon', value: 68 },
+    { label: 'Tue', value: 74 },
+    { label: 'Wed', value: 71 },
+    { label: 'Thu', value: 76 },
+    { label: 'Fri', value: 72 },
+    { label: 'Sat', value: 70 },
+    { label: 'Sun', value: 69 },
+  ],
+  activityMinutes: [
+    { label: 'Mon', value: 25 },
+    { label: 'Tue', value: 40 },
+    { label: 'Wed', value: 30 },
+    { label: 'Thu', value: 55 },
+    { label: 'Fri', value: 45 },
+    { label: 'Sat', value: 20 },
+    { label: 'Sun', value: 15 },
+  ],
+  medicationAdherence: [
+    { label: 'Mon', value: 86 },
+    { label: 'Tue', value: 91 },
+    { label: 'Wed', value: 88 },
+    { label: 'Thu', value: 94 },
+    { label: 'Fri', value: 90 },
+    { label: 'Sat', value: 82 },
+    { label: 'Sun', value: 79 },
+  ],
+};

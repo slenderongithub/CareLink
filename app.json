@@ -9,15 +9,23 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "CareLink uses your location to show live elderly tracking on the Fitness tab."
+      }
     },
     "android": {
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#F8FAF9"
       }
     },
     "plugins": [
-      "expo-asset"
+      "expo-asset",
+      "expo-location"
     ]
   }
 }
