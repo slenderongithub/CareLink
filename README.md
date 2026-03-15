@@ -1,6 +1,28 @@
 # CareLink
 
-CareLink is a React Native mobile app built with Expo and TypeScript for family caregiving coordination. The app is designed as a caregiver dashboard with medication tracking, family activity updates, room-based caregiver grouping, theme switching, and a dynamic medication reminder surface inspired by the Dynamic Island pattern.
+CareLink is a React Native mobile app built with Expo and TypeScript for family caregiving coordination.
+
+## Screenshots
+
+<p align="center">
+  <img src="screenshots/dashboard.png" width="18%" alt="Dashboard" />
+  <img src="screenshots/medications.png" width="18%" alt="Medications" />
+  <img src="screenshots/fitnesstracking1.png" width="18%" alt="Fitness Tracking" />
+  <img src="screenshots/fitnesstracking2.png" width="18%" alt="Fitness Stats" />
+  <img src="screenshots/familyactivity1.png" width="18%" alt="Family Activity" />
+</p>
+
+<p align="center">
+  <img src="screenshots/familyactivity2.png" width="18%" alt="Weekly Trends" />
+  <img src="screenshots/roomsignin.png" width="18%" alt="Rooms Sign In" />
+  <img src="screenshots/room.png" width="18%" alt="Room Members" />
+  <img src="screenshots/carelinkai.png" width="18%" alt="CareLink AI" />
+  <img src="screenshots/dynamicnotification.png" width="18%" alt="Dynamic Notification" />
+</p>
+
+<p align="center">
+  <img src="screenshots/darkmode.png" width="18%" alt="Dark Mode" />
+</p> The app is designed as a caregiver dashboard with medication tracking, family activity updates, room-based caregiver grouping, theme switching, and a dynamic medication reminder surface inspired by the Dynamic Island pattern.
 
 This README is written as a current-state handoff so another model or designer can make stronger visual and interaction changes without losing existing functionality.
 
