@@ -85,9 +85,3 @@ Scan the QR code with Expo Go on your phone to run the app.
 
 > **Note:** The app currently uses mock data and local-only persistence. There is no live backend or real authentication.
 
-
-## Stack
-
-- Expo SDK 54
-- React Native 0.81
-- React 19
